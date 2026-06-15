@@ -57,15 +57,8 @@
 <script>
 (function () {
   const overlay = document.getElementById('overlay');
-  const KEY = 'ei-basic-shown';
-  let armed = true;
 
-  function show() {
-    if (!armed || sessionStorage.getItem(KEY)) return;
-    armed = false;
-    sessionStorage.setItem(KEY, '1');
-    overlay.classList.add('show');
-  }
+  function show() { overlay.classList.add('show'); }
   function hide() { overlay.classList.remove('show'); }
 
   // Fire when the mouse leaves through the top of the viewport.
