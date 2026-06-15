@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Native beforeunload Exit Intent</title>
+<title>Native Dialog + Custom Popup</title>
 <style>
   * { box-sizing: border-box; }
   body { margin:0; font-family: system-ui, sans-serif; background:#f8fafc; color:#1e293b; line-height:1.6; }
@@ -14,28 +14,88 @@
     border-radius:10px; font-size:1rem; }
   input[type=text]:focus { outline:none; border-color:#6366f1; }
   .note { background:#eef2ff; border-left:4px solid #6366f1; padding:14px 18px; border-radius:8px; color:#3730a3; }
+
+  /* Custom HTML popup (fully editable, unlike the native dialog) */
+  .ei-overlay { position:fixed; inset:0; background: rgba(15,23,42,.6);
+    display:flex; align-items:center; justify-content:center;
+    opacity:0; visibility:hidden; transition: opacity .25s; z-index:1000; }
+  .ei-overlay.show { opacity:1; visibility:visible; }
+  .ei-modal { position:relative; background:#fff; border-radius:16px; padding:40px; max-width:440px;
+    width:90%; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,.3);
+    transform: translateY(20px) scale(.96); transition: transform .25s; }
+  .ei-overlay.show .ei-modal { transform: translateY(0) scale(1); }
+  .ei-modal h2 { margin:0 0 10px; font-size:1.6rem; }
+  .ei-modal p { color:#64748b; margin:0 0 24px; }
+  .ei-modal .cta { background:#6366f1; color:#fff; border:0; padding:14px 28px; font-size:1rem;
+    border-radius:10px; cursor:pointer; font-weight:600; }
+  .ei-modal .cta:hover { background:#4f46e5; }
+  .ei-close { position:absolute; top:16px; right:20px; background:none; border:0;
+    font-size:1.6rem; color:#94a3b8; cursor:pointer; line-height:1; }
 </style>
 </head>
 <body>
   <div class="content">
-    <h1>Native Dialog</h1>
-    <p>Uses the browser's built-in "Leave site?" prompt. Try to reload or close the tab.</p>
+    <h1>Native Dialog + Custom Popup</h1>
+    <p>Two exit strategies on one page:</p>
+    <ul>
+      <li><strong>Custom HTML popup</strong> — move your mouse to the top of the window. Fully styleable, and its title/message are editable below.</li>
+      <li><strong>Native dialog</strong> — try to reload or close the tab. Browser-controlled; its look and text can't be changed.</li>
+    </ul>
 
-    <label for="msg">Custom message</label>
+    <label for="title">Popup title</label>
+    <input type="text" id="title" value="Wait!">
+
+    <label for="msg">Popup message</label>
     <input type="text" id="msg" value="Are you sure you want to leave?">
 
-    <p class="note">Modern browsers show their own generic wording and ignore custom text,
-      but the message you set is still passed to <code>e.returnValue</code> (older browsers display it).</p>
+    <p class="note">The custom popup is just HTML, so you can change anything — text, buttons, colors, layout.
+      The native dialog can't be customized: browsers show their own wording (the text is still passed to
+      <code>e.returnValue</code> for older browsers).</p>
+  </div>
+
+  <div class="ei-overlay" id="overlay">
+    <div class="ei-modal">
+      <button class="ei-close" id="close" aria-label="Close">&times;</button>
+      <h2 id="popupTitle">Wait!</h2>
+      <p id="popupMsg">Are you sure you want to leave?</p>
+      <button class="cta" id="stay">Stay</button>
+    </div>
   </div>
 
 <script>
 (function () {
-  const msg = document.getElementById('msg');
+  const overlay = document.getElementById('overlay');
+  const titleInput = document.getElementById('title');
+  const msgInput = document.getElementById('msg');
+  const popupTitle = document.getElementById('popupTitle');
+  const popupMsg = document.getElementById('popupMsg');
 
-  window.addEventListener('beforeunload', (e) => {
-    const text = msg.value;
-    e.preventDefault();          // required to trigger the prompt
-    e.returnValue = text;        // custom text (honored by legacy browsers)
+  // Keep the popup's HTML text in sync with the inputs (live editing).
+  function sync() {
+    popupTitle.textContent = titleInput.value;
+    popupMsg.textContent = msgInput.value;
+  }
+  titleInput.addEventListener('input', sync);
+  msgInput.addEventListener('input', sync);
+  sync();
+
+  function show() { overlay.classList.add('show'); }
+  function hide() { overlay.classList.remove('show'); }
+
+  // 1) Custom HTML popup on exit intent (mouse leaves through the top).
+  document.addEventListener('mouseout', e => {
+    if (e.clientY <= 0 && !e.relatedTarget && !e.toElement) show();
+  });
+  document.getElementById('close').addEventListener('click', hide);
+  document.getElementById('stay').addEventListener('click', hide);
+  overlay.addEventListener('click', e => { if (e.target === overlay) hide(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') hide(); });
+
+  // 2) Native dialog for the real close/reload (can't be styled).
+  window.addEventListener('beforeunload', e => {
+    const text = msgInput.value;
+    e.preventDefault();
+    e.returnValue = text; // custom text honored only by legacy browsers
     return text;
   });
 })();
