@@ -37,8 +37,8 @@
   <div class="content">
     <p><a class="back" href="index.html">← Back</a></p>
     <h1>Mobile</h1>
-    <p>Scroll down, then flick back up quickly. (Also fires on back button.)</p>
-    <div class="filler">↓ scroll down, then flick up ↑</div>
+    <p>Press the back button to trigger the popup.</p>
+    <div class="filler">no cursor on mobile, so we trap the back gesture</div>
   </div>
 
   <div class="ei-overlay" id="overlay">
@@ -58,27 +58,11 @@
   function show() { overlay.classList.add('show'); }
   function hide() { overlay.classList.remove('show'); }
 
-  // 1) Fast upward-scroll detection.
-  let lastY = window.scrollY, lastT = Date.now();
-  window.addEventListener('scroll', () => {
-    const y = window.scrollY, t = Date.now();
-    const dy = y - lastY, dt = t - lastT || 1;
-    const velocity = dy / dt; // px per ms; negative = scrolling up
-    // Fast upward flick while still some way down the page.
-    if (velocity < -1.2 && y < lastY && y > 150) show();
-    lastY = y; lastT = t;
-  }, { passive: true });
-
-  // 2) Back-button intent trap (works on mobile + desktop).
+  // Back-button intent trap — fires when the user actually tries to leave.
   history.pushState(null, '', location.href);
   window.addEventListener('popstate', () => {
     show();
     history.pushState(null, '', location.href); // re-trap once
-  });
-
-  // 3) Tab-hide as a fallback signal.
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') show();
   });
 
   document.getElementById('cta').addEventListener('click', hide);
