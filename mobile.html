@@ -36,8 +36,9 @@
   <div class="content">
     <p><a class="back" href="index.html">← Back</a></p>
     <h1>Mobile</h1>
-    <p>Press the back button to trigger the popup.</p>
-    <div class="note">No cursor on mobile, so we trap the back gesture.</div>
+    <p>Tap the page once, then press the back button to trigger the popup.</p>
+    <div class="note">No cursor on mobile, so we trap the back gesture. The trap is
+      armed after your first tap — browsers ignore history changes made before you interact.</div>
   </div>
 
   <div class="ei-overlay" id="overlay">
@@ -57,11 +58,21 @@
   function show() { overlay.classList.add('show'); }
   function hide() { overlay.classList.remove('show'); }
 
-  // Back-button intent trap — fires when the user actually tries to leave.
-  history.pushState(null, '', location.href);
+  // Back-button intent trap. Mobile browsers SKIP history entries added before
+  // the user has interacted with the page (anti-trap intervention), so the back
+  // button would otherwise leave immediately. We arm the trap on the first tap/scroll.
+  let armed = false;
+  function arm() {
+    if (armed) return;
+    armed = true;
+    history.pushState(null, '', location.href);
+  }
+  ['pointerdown', 'touchstart', 'click', 'keydown', 'scroll'].forEach(ev =>
+    window.addEventListener(ev, arm, { passive: true }));
+
   window.addEventListener('popstate', () => {
     show();
-    history.pushState(null, '', location.href); // re-trap once
+    history.pushState(null, '', location.href); // re-trap so back keeps firing
   });
 
   document.getElementById('cta').addEventListener('click', hide);
