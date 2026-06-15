@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Native beforeunload Exit Intent</title>
+<title>Native beforeunload + Custom Banner</title>
 <style>
   * { box-sizing: border-box; }
   body { margin:0; font-family: system-ui, sans-serif; background:#f8fafc; color:#1e293b; line-height:1.6; }
@@ -14,25 +14,55 @@
     border-radius:10px; font-size:1rem; }
   input[type=text]:focus { outline:none; border-color:#6366f1; }
   .note { background:#eef2ff; border-left:4px solid #6366f1; padding:14px 18px; border-radius:8px; color:#3730a3; }
+
+  /* Custom banner revealed from inside the beforeunload handler */
+  .banner { position:fixed; top:0; left:0; right:0; background:#6366f1; color:#fff;
+    display:flex; align-items:center; justify-content:center; gap:16px;
+    padding:14px 20px; font-weight:600; box-shadow:0 4px 14px rgba(0,0,0,.2);
+    transform: translateY(-100%); transition: transform .3s; z-index:1000; }
+  .banner.show { transform: translateY(0); }
+  .banner button { background:#fff; color:#4338ca; border:0; padding:8px 16px;
+    border-radius:8px; font-weight:600; cursor:pointer; }
 </style>
 </head>
 <body>
-  <div class="content">
-    <h1>Native Dialog</h1>
-    <p>Uses the browser's built-in "Leave site?" prompt. Try to reload or close the tab.</p>
+  <div class="banner" id="banner">
+    <span id="bannerText">Leaving already? Here's 10% off if you stay 👀</span>
+    <button id="bannerClose">Got it</button>
+  </div>
 
-    <label for="msg">Custom message</label>
+  <div class="content">
+    <h1>Native Dialog + Custom Banner</h1>
+    <p>The browser's native "Leave site?" prompt still fires. But inside that same
+       <code>beforeunload</code> event we also run our own logic — here, revealing a banner
+       on the page. If the user clicks "Cancel" / stays, they're left looking at your message.</p>
+
+    <label for="msg">Native dialog message</label>
     <input type="text" id="msg" value="Are you sure you want to leave?">
 
-    <p class="note">Modern browsers show their own generic wording and ignore custom text,
-      but the message you set is still passed to <code>e.returnValue</code> (older browsers display it).</p>
+    <label for="banner-msg">Custom banner text</label>
+    <input type="text" id="banner-msg" value="Leaving already? Here's 10% off if you stay 👀">
+
+    <p class="note">Try to reload or close the tab: the native dialog appears, and the banner
+      slides in behind it. The native dialog's own look/text can't be changed — but your page can.</p>
   </div>
 
 <script>
 (function () {
   const msg = document.getElementById('msg');
+  const bannerMsg = document.getElementById('banner-msg');
+  const banner = document.getElementById('banner');
+  const bannerText = document.getElementById('bannerText');
+
+  // Keep the banner text in sync with its input.
+  bannerMsg.addEventListener('input', () => { bannerText.textContent = bannerMsg.value; });
+  document.getElementById('bannerClose').addEventListener('click', () => banner.classList.remove('show'));
 
   window.addEventListener('beforeunload', (e) => {
+    // Our own page logic, triggered by the exit attempt: reveal the banner.
+    banner.classList.add('show');
+
+    // Plus the native browser prompt.
     const text = msg.value;
     e.preventDefault();          // required to trigger the prompt
     e.returnValue = text;        // custom text (honored by legacy browsers)
