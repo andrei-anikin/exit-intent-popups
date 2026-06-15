@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Native beforeunload Exit Intent</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, sans-serif; background:#f8fafc; color:#1e293b; line-height:1.6; }
+  .content { max-width: 720px; margin:0 auto; padding: 60px 24px; }
+  h1 { font-size: 2rem; }
+  label { display:block; margin:18px 0 6px; font-weight:600; }
+  input[type=text] { width:100%; max-width:420px; padding:12px 14px; border:2px solid #cbd5e1;
+    border-radius:10px; font-size:1rem; }
+  input[type=text]:focus { outline:none; border-color:#6366f1; }
+  .note { background:#eef2ff; border-left:4px solid #6366f1; padding:14px 18px; border-radius:8px; color:#3730a3; }
+</style>
+</head>
+<body>
+  <div class="content">
+    <h1>Native Dialog</h1>
+    <p>Uses the browser's built-in "Leave site?" prompt. Try to reload or close the tab.</p>
+
+    <label for="msg">Custom message</label>
+    <input type="text" id="msg" value="Are you sure you want to leave?">
+
+    <p class="note">Modern browsers show their own generic wording and ignore custom text,
+      but the message you set is still passed to <code>e.returnValue</code> (older browsers display it).</p>
+  </div>
+
+<script>
+(function () {
+  const msg = document.getElementById('msg');
+
+  window.addEventListener('beforeunload', (e) => {
+    const text = msg.value;
+    e.preventDefault();          // required to trigger the prompt
+    e.returnValue = text;        // custom text (honored by legacy browsers)
+    return text;
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Basic Exit-Intent Popup</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, sans-serif; background:#f8fafc; color:#1e293b; line-height:1.6; }
+  .content { max-width: 720px; margin: 0 auto; padding: 60px 24px; }
+  h1 { font-size: 2rem; }
+  a.back { color:#6366f1; text-decoration:none; }
+
+  /* Overlay + modal */
+  .ei-overlay {
+    position: fixed; inset: 0; background: rgba(15,23,42,.6);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; visibility: hidden; transition: opacity .25s; z-index: 1000;
+  }
+  .ei-overlay.show { opacity: 1; visibility: visible; }
+  .ei-modal {
+    background:#fff; border-radius:16px; padding: 40px; max-width: 440px; width: 90%;
+    text-align:center; box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    transform: translateY(20px) scale(.96); transition: transform .25s;
+  }
+  .ei-overlay.show .ei-modal { transform: translateY(0) scale(1); }
+  .ei-modal h2 { margin:0 0 10px; font-size: 1.6rem; }
+  .ei-modal p { color:#64748b; margin: 0 0 24px; }
+  .ei-modal button.cta {
+    background:#6366f1; color:#fff; border:0; padding: 14px 28px;
+    font-size:1rem; border-radius:10px; cursor:pointer; font-weight:600;
+  }
+  .ei-modal button.cta:hover { background:#4f46e5; }
+  .ei-close {
+    position:absolute; top:16px; right:20px; background:none; border:0;
+    font-size:1.6rem; color:#94a3b8; cursor:pointer; line-height:1;
+  }
+  .ei-modal { position: relative; }
+</style>
+</head>
+<body>
+  <div class="content">
+    <p><a class="back" href="index.html">← Back</a></p>
+    <h1>Mouse Exit</h1>
+    <p>Move your mouse to the top of the window.</p>
+  </div>
+
+  <div class="ei-overlay" id="overlay">
+    <div class="ei-modal">
+      <button class="ei-close" id="close" aria-label="Close">&times;</button>
+      <h2>Wait!</h2>
+      <p>Don't leave yet.</p>
+      <button class="cta" id="stay">Stay</button>
+    </div>
+  </div>
+
+<script>
+(function () {
+  const overlay = document.getElementById('overlay');
+  const KEY = 'ei-basic-shown';
+  let armed = true;
+
+  function show() {
+    if (!armed || sessionStorage.getItem(KEY)) return;
+    armed = false;
+    sessionStorage.setItem(KEY, '1');
+    overlay.classList.add('show');
+  }
+  function hide() { overlay.classList.remove('show'); }
+
+  // Fire when the mouse leaves through the top of the viewport.
+  document.addEventListener('mouseout', function (e) {
+    if (e.clientY <= 0 && !e.relatedTarget && !e.toElement) show();
+  });
+
+  document.getElementById('close').addEventListener('click', hide);
+  document.getElementById('stay').addEventListener('click', hide);
+  overlay.addEventListener('click', e => { if (e.target === overlay) hide(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') hide(); });
+})();
+</script>
+</body>
+</html>

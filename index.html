@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exit-Intent Popup Examples</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --accent:#6366f1; --text:#e2e8f0; --muted:#94a3b8; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+         background: var(--bg); color: var(--text); line-height:1.6; }
+  header { padding: 64px 24px 32px; text-align:center; }
+  header h1 { font-size: 2.4rem; margin:0 0 8px; }
+  header p { color: var(--muted); max-width: 640px; margin: 0 auto; }
+  .grid { display:grid; gap:20px; grid-template-columns: repeat(auto-fill, minmax(260px,1fr));
+          max-width: 900px; margin: 32px auto 80px; padding: 0 24px; }
+  a.card { display:block; background: var(--card); border:1px solid #334155; border-radius:14px;
+           padding: 24px; text-decoration:none; color:inherit; transition: transform .15s, border-color .15s; }
+  a.card:hover { transform: translateY(-4px); border-color: var(--accent); }
+  a.card h2 { margin:0 0 6px; font-size:1.15rem; }
+  a.card p { margin:0; color: var(--muted); font-size:.92rem; }
+  .tag { display:inline-block; margin-top:14px; font-size:.72rem; letter-spacing:.5px;
+         text-transform:uppercase; color: var(--accent); border:1px solid var(--accent);
+         padding:2px 8px; border-radius:99px; }
+  footer { text-align:center; color: var(--muted); padding: 0 24px 60px; font-size:.85rem; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Exit-Intent Popup Examples</h1>
+    <p>Three self-contained, dependency-free demos — each using a different detection method.</p>
+  </header>
+
+  <div class="grid">
+    <a class="card" href="mouse-exit.html">
+      <h2>Mouse Exit</h2>
+      <p>Desktop pattern — fires when the cursor leaves through the top of the viewport.</p>
+      <span class="tag">mouseout</span>
+    </a>
+    <a class="card" href="mobile.html">
+      <h2>Mobile</h2>
+      <p>No cursor on touch devices — uses fast upward-scroll, the back-button, and tab-hide.</p>
+      <span class="tag">scroll + popstate</span>
+    </a>
+    <a class="card" href="native-beforeunload.html">
+      <h2>Native Dialog</h2>
+      <p>The browser's built-in "Leave site?" confirmation — no custom HTML/CSS.</p>
+      <span class="tag">beforeunload</span>
+    </a>
+  </div>
+
+  <footer>
+    Mouse-based demos fire once per session — clear <code>sessionStorage</code> or use a private window to retrigger.
+  </footer>
+</body>
+</html>
